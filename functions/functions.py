@@ -8,7 +8,7 @@ def get_json_file() -> list[dict, ...]:
     :return: список словарей
     """
 
-    with open("operations/operations.json") as file:
+    with open('C:\\SkyPro\\KR_3\\operations\\operations.json', 'r', encoding='utf-8') as file:
         file = json.load(file)
         return file
 
@@ -48,33 +48,73 @@ def get_latest_transactions(list_: list[dict, ...]) -> list[dict, ...]:
 
 def get_date_from_string(list_: list[dict, ...]) -> tuple[str, ...]:
     """
-    Функция принимает список словарей и возвращает кортеж из дат и типов операций.
+    Функция принимает список словарей и возвращает кортеж из дат и типов операций
+    :param list_: список словарей
+    :return: кортеж строк
+    """
+    # Собираем даты и типы операций из списка словарей
+    dates = [data["date"][:10].replace("-", ".") for data in list_]
+    operations = [description["description"] for description in list_]
+
+    # Преобразуем формат даты и объединяем с типом операции
+    formatted_dates = [".".join(date.split(".")[::-1]) for date in dates]
+    type_transaction = [f"{date} {operation}" for date, operation in zip(formatted_dates, operations)]
+
+    return type_transaction
+
+
+def get_card_number(list_: list[dict, ...]) -> tuple[str, ...]:
+    """
+    Функция принимает список словарей и возвращает зашифрованное значение по ключу "from"
     :param list_: список словарей
     :return: кортеж строк
     """
 
-    dates = []
-    descriptions = []
-    for transaction in list_:
-        # Извлекаем дату и берем первые 10 символов, заменяя дефисы на точки
-        date = transaction["date"][:10].replace("-", ".")
-        dates.append(date)
-        description = transaction["description"]
-        descriptions.append(description)
+    list_cards = [card.get("from") for card in list_]
+    list_number = [number.split()[-1] for number in list_cards if number is not None]
+    cards_number = [number[:6] + "*" * 6 + number[-4:] for number in list_number if len(number) < 20]
+    hidden_numbers = ("".join([f"{cards_number[0][:4]} {cards_number[0][4:8]} {cards_number[0][8:12]} {cards_number[0][12:16]},"
+                      f"{cards_number[1][:4]} {cards_number[1][4:8]} {cards_number[1][8:12]} {cards_number[1][12:16]}"])
+                      .split(","))
+    hidden_numbers.append("**" + list_number[2][len(list_number[2]) - 4:])
 
-    # Создаем список для хранения дат в формате DD.MM.YYYY
-    reversed_dates = []
-    for date in dates:
-        # Разбиваем дату на части (YYYY, MM, DD), переворачиваем и соединяем обратно
-        parts = date.split(".")
-        reversed_date = ".".join(parts[::-1])
-        reversed_dates.append(reversed_date)
+    empty_list = []
+    for card in list_cards:
+        if card is not None:
+            for el in card:
+                if el.isalpha():
+                    empty_list.append(el)
 
-    result = []
-    for i in range(len(reversed_dates)):
-        final_string = reversed_dates[i] + " " + descriptions[i]
-        result.append(final_string)
+    card_names = f"{"".join(empty_list)[:11]} {"".join(empty_list)[11:18]} {"".join(empty_list)[18:]}".split()
+    hidden_information = (f"{None}",
+                          f"{card_names[0][:4]} {card_names[0][4:11]} {hidden_numbers[0]}",
+                          f"{card_names[1]} {hidden_numbers[1]}",
+                          f"{card_names[2]} {hidden_numbers[2]}",
+                          f"{None}")
 
-    return tuple(result)
+    return hidden_information
 
 
+def get_account_number(list_: list[dict, ...]) -> list[str, ...]:
+    """
+    Функция получает список из 5 последних операций и выводит замаскированный счет куда были отправлены деньги
+    :param list_: список словарей
+    :return: список строк
+    """
+
+    account = [to.get("to").split()[0] + " " for to in list_]
+    hidden_account = [account[0] + "**" + to.get("to").split()[-1][len(to.get("to").split()[-1]) - 4:] for to in list_]
+
+    return hidden_account
+
+
+def get_amount_transactions(list_: list[dict, ...]) -> list[str, ...]:
+    """
+    Функция получает список из 5 последних операций и возвращает список из сумм и валюты
+    выполненных операций
+    :param list_: список словарей
+    :return: список строк
+    """
+
+    summ = [summ.get("operationAmount")["amount"] + " " + summ.get("operationAmount")["currency"]["name"] for summ in list_]
+    return summ
