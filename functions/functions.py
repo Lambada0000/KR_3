@@ -48,3 +48,4 @@ def get_date_from_string(list_: list[dict, ...]) -> tuple[str, ...]:
                         f"{revers_data[4] + " " + list_operations[4]}")
 
     return type_transaction
+
