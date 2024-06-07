@@ -1,5 +1,6 @@
 import json
 from operator import itemgetter
+import os
 
 
 def get_json_file() -> list[dict, ...]:
@@ -8,9 +9,16 @@ def get_json_file() -> list[dict, ...]:
     :return: список словарей
     """
 
-    with open('C:\\SkyPro\\KR_3\\operations\\operations.json', 'r', encoding='utf-8') as file:
-        file = json.load(file)
-        return file
+    # Получение абсолютного пути к текущему файлу
+    current_file_path = os.path.abspath(__file__)
+    # Переход на уровень выше, к корню проекта
+    project_root = os.path.dirname(os.path.dirname(current_file_path))
+    # Создание относительного пути к файлу operations.json
+    relative_path = os.path.join(project_root, 'operations', 'operations.json')
+
+    with open(relative_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        return data
 
 
 def get_list_completed_operations(list_: list[dict, ...]) -> list[dict, ...]:
