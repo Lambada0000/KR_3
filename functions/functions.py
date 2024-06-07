@@ -1,6 +1,6 @@
 import json
 from operator import itemgetter
-
+import os
 
 def get_json_file() -> list[dict, ...]:
     """
@@ -8,9 +8,16 @@ def get_json_file() -> list[dict, ...]:
     :return: список словарей
     """
 
-    with open('C:\\SkyPro\\KR_3\\operations\\operations.json', 'r', encoding='utf-8') as file:
-        file = json.load(file)
-        return file
+    # Получение абсолютного пути к текущему файлу
+    current_file_path = os.path.abspath(__file__)
+    # Переход на уровень выше, к корню проекта
+    project_root = os.path.dirname(os.path.dirname(current_file_path))
+    # Создание относительного пути к файлу operations.json
+    relative_path = os.path.join(project_root, 'operations', 'operations.json')
+
+    with open(relative_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        return data
 
 
 def get_list_completed_operations(list_: list[dict, ...]) -> list[dict, ...]:
@@ -52,13 +59,15 @@ def get_date_from_string(list_: list[dict, ...]) -> tuple[str, ...]:
     :param list_: список словарей
     :return: кортеж строк
     """
-    # Собираем даты и типы операций из списка словарей
-    dates = [data["date"][:10].replace("-", ".") for data in list_]
-    operations = [description["description"] for description in list_]
 
-    # Преобразуем формат даты и объединяем с типом операции
-    formatted_dates = [".".join(date.split(".")[::-1]) for date in dates]
-    type_transaction = [f"{date} {operation}" for date, operation in zip(formatted_dates, operations)]
+    date = [data["date"][:10].replace("-", ".") for data in list_]
+    list_operations = [description["description"] for description in list_]
+    revers_data = [".".join(data.split(".")[::-1]) for data in date]
+    type_transaction = (f"{revers_data[0] + " " + list_operations[0]}",
+                        f"{revers_data[1] + " " + list_operations[1]}",
+                        f"{revers_data[2] + " " + list_operations[2]}",
+                        f"{revers_data[3] + " " + list_operations[3]}",
+                        f"{revers_data[4] + " " + list_operations[4]}")
 
     return type_transaction
 
