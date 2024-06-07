@@ -2,7 +2,6 @@ import json
 from operator import itemgetter
 import os
 
-
 def get_json_file() -> list[dict, ...]:
     """
     Функция считывает файл Json
@@ -60,13 +59,15 @@ def get_date_from_string(list_: list[dict, ...]) -> tuple[str, ...]:
     :param list_: список словарей
     :return: кортеж строк
     """
-    # Собираем даты и типы операций из списка словарей
-    dates = [data["date"][:10].replace("-", ".") for data in list_]
-    operations = [description["description"] for description in list_]
 
-    # Преобразуем формат даты и объединяем с типом операции
-    formatted_dates = [".".join(date.split(".")[::-1]) for date in dates]
-    type_transaction = [f"{date} {operation}" for date, operation in zip(formatted_dates, operations)]
+    date = [data["date"][:10].replace("-", ".") for data in list_]
+    list_operations = [description["description"] for description in list_]
+    revers_data = [".".join(data.split(".")[::-1]) for data in date]
+    type_transaction = (f"{revers_data[0] + " " + list_operations[0]}",
+                        f"{revers_data[1] + " " + list_operations[1]}",
+                        f"{revers_data[2] + " " + list_operations[2]}",
+                        f"{revers_data[3] + " " + list_operations[3]}",
+                        f"{revers_data[4] + " " + list_operations[4]}")
 
     return type_transaction
 
